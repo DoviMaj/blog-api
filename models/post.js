@@ -5,7 +5,7 @@ const postSchema = new Schema({
   title: { type: String, required: true },
   date: { default: Date.now(), type: Date },
   text: { required: true, type: String },
-  user: { required: true, type: Object },
+  author_name: { required: true, type: String },
   published: { default: false, type: Boolean },
 });
 
