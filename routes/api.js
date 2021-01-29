@@ -1,6 +1,8 @@
 const express = require("express");
 const Post = require("../models/post");
 const { body, validationResult } = require("express-validator");
+const passport = require("passport");
+const jwt = require("jsonwebtoken");
 const router = express.Router();
 
 // ROUTES
@@ -11,7 +13,7 @@ router.get("/", function (req, res, next) {
 });
 
 // create post - api/posts
-router.post("/posts", [
+router.post("/posts", passport.authenticate("jwt", { session: false }), [
   body("author_name", "Empty name").trim().escape(),
   body("title", "text").trim().escape(),
 
@@ -69,37 +71,45 @@ router.get("/posts/:id", async function (req, res, next) {
 });
 
 // update post - api/posts/:postid
-router.put("/posts/:id", async function (req, res, next) {
-  try {
-    const { author_name, title, text } = req.body;
-    const post = await Post.findByIdAndUpdate(req.params.id, {
-      author_name,
-      title,
-      text,
-    });
-    if (!post) {
-      return res.status(404).json({ msg: "updated sucessfuly" });
+router.put(
+  "/posts/:id",
+  passport.authenticate("jwt", { session: false }),
+  async function (req, res, next) {
+    try {
+      const { author_name, title, text } = req.body;
+      const post = await Post.findByIdAndUpdate(req.params.id, {
+        author_name,
+        title,
+        text,
+      });
+      if (!post) {
+        return res.status(404).json({ msg: "updated sucessfuly" });
+      }
+      res.status(200).json({ msg: "updated sucessfuly" });
+    } catch (err) {
+      next(err);
     }
-    res.status(200).json({ msg: "updated sucessfuly" });
-  } catch (err) {
-    next(err);
   }
-});
+);
 
 // delete post - api/posts/:postid
-router.delete("/posts/:id", async function (req, res, next) {
-  try {
-    const post = await Post.findById(req.params.id);
-    if (!post) {
-      return res
-        .status(404)
-        .json({ err: `posts with id ${req.params.id} not found` });
+router.delete(
+  "/posts/:id",
+  passport.authenticate("jwt", { session: false }),
+  async function (req, res, next) {
+    try {
+      const post = await Post.findById(req.params.id);
+      if (!post) {
+        return res
+          .status(404)
+          .json({ err: `posts with id ${req.params.id} not found` });
+      }
+      res.status(200).json({ msg: `post ${req.params.id} deleted sucessfuly` });
+    } catch (err) {
+      next(err);
     }
-    res.status(200).json({ msg: `post ${req.params.id} deleted sucessfuly` });
-  } catch (err) {
-    next(err);
   }
-});
+);
 
 // create comment - api/posts/:postid/comments
 router.post("/posts/:postid/comments", [
@@ -164,6 +174,7 @@ router.get("/posts/:postid/comments", async function (req, res, next) {
 // update comment - api/posts/:postid/comments/:commentid
 router.put(
   "/posts/:postid/comments/:commentid",
+  passport.authenticate("jwt", { session: false }),
   async function (req, res, next) {
     try {
       const { text, user } = req.body;
@@ -184,6 +195,7 @@ router.put(
 // delete comment - api/posts/:postid/comments/:commentid
 router.delete(
   "/posts/:postid/comments/:commentid",
+  passport.authenticate("jwt", { session: false }),
   async function (req, res, next) {
     try {
       const comment = await Comment.findById(req.params.commentid);
@@ -227,7 +239,7 @@ router.post("/login", async (req, res, next) => {
         if (error) return next(error);
 
         const body = { _id: user._id, username: user.username };
-        const token = jwt.sign({ user: body }, "TOP_SECRET");
+        const token = jwt.sign({ user: body }, process.env.SECRET);
 
         return res.json({ token });
       });
