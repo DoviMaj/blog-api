@@ -1,6 +1,7 @@
 const express = require("express");
 const Post = require("../models/post");
 const { body, validationResult } = require("express-validator");
+const Author = require("../models/author");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
@@ -8,9 +9,13 @@ const router = express.Router();
 // ROUTES
 
 /* index route*/
-router.get("/", function (req, res, next) {
-  res.redirect("/api/posts");
-});
+router.get(
+  "/",
+  // passport.authenticate("jwt", { session: false }),
+  function (req, res, next) {
+    res.redirect("/api/posts");
+  }
+);
 
 // create post - api/posts
 router.post("/posts", passport.authenticate("jwt", { session: false }), [
@@ -43,17 +48,21 @@ router.post("/posts", passport.authenticate("jwt", { session: false }), [
 ]);
 
 // read/get all posts - api/posts
-router.get("/posts", async function (req, res, next) {
-  try {
-    const posts = await Post.find({});
-    if (!posts) {
-      return res.status(404).json({ err: "posts not found" });
+router.get(
+  "/posts",
+  passport.authenticate("jwt", { session: false }),
+  async function (req, res, next) {
+    try {
+      const posts = await Post.find({});
+      if (!posts) {
+        return res.status(404).json({ err: "posts not found" });
+      }
+      res.status(200).json({ posts });
+    } catch (err) {
+      next(err);
     }
-    res.status(200).json({ posts });
-  } catch (err) {
-    next(err);
   }
-});
+);
 
 // read/get post - api/posts/:id
 router.get("/posts/:id", async function (req, res, next) {
@@ -216,12 +225,46 @@ router.delete(
 // create author - api/signup
 router.post(
   "/sign-up",
-  passport.authenticate("signup", { session: false }),
+  body("username", "Empty name")
+    .trim()
+    .escape()
+    .custom(async (username) => {
+      try {
+        const existingUsername = await Author.findOne({ username: username });
+        if (existingUsername) {
+          throw new Error("username already in use");
+        }
+      } catch (err) {
+        throw new Error(err);
+      }
+    }),
+  body("password").isLength(6).withMessage("Minimum length 6 characters"),
+  body("confirm-password").custom((value, { req }) => {
+    if (value !== req.body.password) {
+      return next("Password confirmation does not match password");
+    }
+    // Indicates the success of this synchronous custom validator
+    return true;
+  }),
+
   async (req, res, next) => {
-    res.json({
-      message: "Signup successful",
-      user: req.user,
-    });
+    const errors = validationResult(req);
+    passport.authenticate("signup", { session: false }, (err, user, info) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.json({
+          username: req.body.username,
+          errors: errors.array(),
+        });
+      }
+      if (err) {
+        return next(err);
+      }
+      res.json({
+        message: "Signed-up sucessfuly",
+        user: req.user,
+      });
+    })(req, res, next);
   }
 );
 
@@ -239,7 +282,9 @@ router.post("/login", async (req, res, next) => {
         if (error) return next(error);
 
         const body = { _id: user._id, username: user.username };
-        const token = jwt.sign({ user: body }, process.env.SECRET);
+        const token = jwt.sign({ user: body }, process.env.SECRET, {
+          expiresIn: "1d",
+        });
 
         return res.json({ token });
       });

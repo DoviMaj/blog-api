@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const { body, validationResult } = require("express-validator");
 
 const passport = require("passport");
 const localStrategy = require("passport-local").Strategy;
