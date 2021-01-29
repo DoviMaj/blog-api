@@ -5,6 +5,9 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const compression = require("compression");
+const helmet = require("helmet");
+
 const { body, validationResult } = require("express-validator");
 
 const passport = require("passport");
@@ -94,6 +97,8 @@ const app = express();
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
 
+app.use(helmet());
+app.use(compression());
 app.use(cors());
 app.use(logger("dev"));
 app.use(express.json());
