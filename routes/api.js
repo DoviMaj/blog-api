@@ -9,13 +9,9 @@ const router = express.Router();
 // ROUTES
 
 /* index route*/
-router.get(
-  "/",
-  // passport.authenticate("jwt", { session: false }),
-  function (req, res, next) {
-    res.redirect("/api/posts");
-  }
-);
+router.get("/", function (req, res, next) {
+  res.redirect("/api/posts");
+});
 
 // create post - api/posts
 router.post("/posts", passport.authenticate("jwt", { session: false }), [
@@ -50,7 +46,7 @@ router.post("/posts", passport.authenticate("jwt", { session: false }), [
 // read/get all posts - api/posts
 router.get(
   "/posts",
-  passport.authenticate("jwt", { session: false }),
+  // passport.authenticate("jwt", { session: false }),
   async function (req, res, next) {
     try {
       const posts = await Post.find({});

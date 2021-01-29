@@ -8,8 +8,6 @@ const cors = require("cors");
 const compression = require("compression");
 const helmet = require("helmet");
 
-const { body, validationResult } = require("express-validator");
-
 const passport = require("passport");
 const localStrategy = require("passport-local").Strategy;
 const JWTstrategy = require("passport-jwt").Strategy;
