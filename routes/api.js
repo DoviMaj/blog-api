@@ -45,7 +45,7 @@ router.get("/posts", async function (req, res, next) {
   try {
     const posts = await Post.find({});
     if (!posts) {
-      res.status(404).json({ err: "posts not found" });
+      return res.status(404).json({ err: "posts not found" });
     }
     res.status(200).json({ posts });
   } catch (err) {
@@ -58,7 +58,9 @@ router.get("/posts/:id", async function (req, res, next) {
   try {
     const post = await Post.findById(req.params.id);
     if (!post) {
-      res.status(404).json({ err: `post with id ${req.params.id} not found` });
+      return res
+        .status(404)
+        .json({ err: `post with id ${req.params.id} not found` });
     }
     res.status(200).json({ post });
   } catch (err) {
@@ -75,7 +77,10 @@ router.put("/posts/:id", async function (req, res, next) {
       title,
       text,
     });
-    res.json({ msg: "updated sucessfuly" });
+    if (!post) {
+      return res.status(404).json({ msg: "updated sucessfuly" });
+    }
+    res.status(200).json({ msg: "updated sucessfuly" });
   } catch (err) {
     next(err);
   }
@@ -86,7 +91,9 @@ router.delete("/posts/:id", async function (req, res, next) {
   try {
     const post = await Post.findById(req.params.id);
     if (!post) {
-      res.status(404).json({ err: `posts with id ${req.params.id} not found` });
+      return res
+        .status(404)
+        .json({ err: `posts with id ${req.params.id} not found` });
     }
     res.status(200).json({ msg: `post ${req.params.id} deleted sucessfuly` });
   } catch (err) {
@@ -130,7 +137,7 @@ router.get(
     try {
       const comment = await Comment.findById(req.params.commentid);
       if (!comment) {
-        res
+        return res
           .status(404)
           .json({ err: `comment with id ${req.params.commentid} not found` });
       }
@@ -146,7 +153,7 @@ router.get("/posts/:postid/comments", async function (req, res, next) {
   try {
     const comments = await Comment.find({});
     if (!comments) {
-      res.status(404).json({ err: `comments not found` });
+      return res.status(404).json({ err: `comments not found` });
     }
     res.status(200).json({ comments });
   } catch (err) {
@@ -164,7 +171,10 @@ router.put(
         text,
         user,
       });
-      res.json({ msg: "updated sucessfuly" });
+      if (!comment) {
+        return res.status(404).json({ msg: "updated sucessfuly" });
+      }
+      res.status(200).json({ msg: "updated sucessfuly" });
     } catch (err) {
       next(err);
     }
@@ -178,7 +188,7 @@ router.delete(
     try {
       const comment = await Comment.findById(req.params.commentid);
       if (!comment) {
-        res
+        return res
           .status(404)
           .json({ err: `comment with id ${req.params.id} not found` });
       }
