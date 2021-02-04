@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const commentSchema = new Schema({
   date: { default: Date.now(), type: Date },
   text: { required: true, type: String },
-  user: { required: true, type: Object },
+  user: { required: true, type: String },
 });
 
 commentSchema.virtual("date_formated").get(function () {

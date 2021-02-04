@@ -130,12 +130,9 @@ router.post("/posts/:postid/comments", [
       });
       return;
     }
-    // title, date - default to created time, author, published - default to false
+
     const { text, user } = req.body;
-    const comment = await Comment.findByIdAndUpdate(req.params.commentid, {
-      text,
-      user,
-    });
+    const comment = new Comment({ text, user });
     comment.save((err) => {
       if (err) {
         return next(err);
