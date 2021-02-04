@@ -103,7 +103,7 @@ router.delete(
   passport.authenticate("jwt", { session: false }),
   async function (req, res, next) {
     try {
-      const post = await Post.findById(req.params.id);
+      const post = await Post.findByIdAndDelete(req.params.id);
       if (!post) {
         return res
           .status(404)
