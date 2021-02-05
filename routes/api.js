@@ -131,8 +131,8 @@ router.post("/posts/:postid/comments", [
       return;
     }
 
-    const { text, user } = req.body;
-    const comment = new Comment({ text, user });
+    const { text, user, post } = req.body;
+    const comment = new Comment({ text, user, post });
     comment.save((err) => {
       if (err) {
         return next(err);
