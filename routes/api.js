@@ -131,8 +131,9 @@ router.post("/posts/:postid/comments", [
       return;
     }
 
-    const { text, user, post } = req.body;
-    const comment = new Comment({ text, user, post });
+    const { text, user } = req.body;
+    const { postId } = req.params.postid;
+    const comment = new Comment({ text, user, postId });
     comment.save((err) => {
       if (err) {
         return next(err);
@@ -160,10 +161,13 @@ router.get(
   }
 );
 
-// read/get comments - api/posts/:postid/comments
+// read/get all comments - api/posts/:postid/comments
 router.get("/posts/:postid/comments", async function (req, res, next) {
   try {
-    const comments = await Comment.find({});
+    const allComments = await Comment.find({});
+    const comments = allComments.filter(
+      (comment) => comment.post._id === req.params.postid
+    );
     if (!comments) {
       return res.status(404).json({ err: `comments not found` });
     }
