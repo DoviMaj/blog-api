@@ -5,7 +5,7 @@ const commentSchema = new Schema({
   date: { default: Date.now(), type: Date },
   text: { required: true, type: String },
   user: { required: true, type: String },
-  postId: { type: Number, required: true },
+  postId: { type: String, required: true },
 });
 
 commentSchema.virtual("date_formated").get(function () {
