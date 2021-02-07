@@ -199,13 +199,20 @@ router.put(
   }
 );
 
+// DELETE ALL COMMENTS
+
+// const allComments = await Comment.find({});
+//     const comments = allComments.filter(
+//       (comment) => comment.postId === req.params.postid
+//     );
+
 // delete comment - api/posts/:postid/comments/:commentid
 router.delete(
   "/posts/:postid/comments/:commentid",
   passport.authenticate("jwt", { session: false }),
   async function (req, res, next) {
     try {
-      const comment = await Comment.findById(req.params.commentid);
+      const comment = await Comment.findByIdAndDelete(req.params.commentid);
       if (!comment) {
         return res
           .status(404)
